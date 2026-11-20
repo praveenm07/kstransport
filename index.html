@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KS Transport</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#16325c">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#14181f;--mut:#677085;--ln:#e3e6ec;--ac:#1f6feb;--ok:#1a7f4b;--wa:#b7791f;--bad:#c62828;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0f1218;--card:#181d26;--tx:#eef1f6;--mut:#95a0b5;--ln:#272e3b;--ac:#5b9dff;--ok:#4cc38a;--wa:#e0a84a;--bad:#ff6b6b}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0f1218;--card:#181d26;--tx:#eef1f6;--mut:#95a0b5;--ln:#272e3b;--ac:#5b9dff;--ok:#4cc38a;--wa:#e0a84a;--bad:#ff6b6b}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:76px}
+#v{max-width:720px;margin:0 auto;padding:16px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+h1{font-size:22px;margin:0}h2{font-size:18px;margin:0 0 12px}h3{font-size:14px;margin:16px 0 8px;color:var(--mut)}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:10px 14px;font:inherit;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+.btn.g{background:transparent;color:var(--tx);border:1px solid var(--ln)}
+.btn.d{background:transparent;color:var(--bad);border:1px solid var(--bad)}
+.btn.s{padding:6px 10px;font-size:13px;margin-top:8px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:12px 14px;margin-bottom:10px;cursor:pointer}
+.card.n{cursor:default}
+.l{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.mut{color:var(--mut);font-size:13px}
+.amt{font-weight:700}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.stat{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:12px}
+.stat b{display:block;font-size:20px;margin-top:2px}
+.pos{color:var(--ok)}.neg{color:var(--bad)}.warn{color:var(--wa)}
+.pill{font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid var(--ln);color:var(--mut);white-space:nowrap}
+.pill.Paid{color:var(--ok);border-color:var(--ok)}.pill.Unpaid{color:var(--wa);border-color:var(--wa)}.pill.Part{color:var(--ac);border-color:var(--ac)}
+.empty{text-align:center;color:var(--mut);padding:28px 8px}
+.brand{max-width:720px;margin:0 auto;padding:12px 16px 0;font-weight:700;color:var(--ac)}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.fg .w{grid-column:1/-1}
+.note{background:var(--card);border:1px dashed var(--ln);border-radius:12px;padding:10px 12px;margin:12px 0;color:var(--mut);font-size:13px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom,0px);z-index:10}
+nav button{flex:1;background:none;border:0;color:var(--mut);padding:8px 0;font:inherit;font-size:10px;cursor:pointer}
+nav button span{display:block;font-size:18px}
+nav button.on{color:var(--ac);font-weight:700}
+#m{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+#m[hidden]{display:none}
+.sheet{background:var(--card);width:100%;max-width:520px;max-height:92%;overflow:auto;border-radius:16px 16px 0 0;padding:16px}
+label{display:block;font-size:13px;color:var(--mut);margin-bottom:10px}
+input,select{display:block;width:100%;margin-top:4px;padding:10px;border:1px solid var(--ln);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit;font-size:16px}
+.ck{display:flex;align-items:center;gap:8px;color:var(--tx);font-size:14px}.ck input{width:auto;margin:0}
+.row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+#t{position:fixed;left:12px;right:12px;bottom:calc(72px + env(safe-area-inset-bottom,0px));background:var(--tx);color:var(--bg);padding:10px 14px;border-radius:10px;z-index:50;font-size:14px}
+#t[hidden]{display:none}
+#inv{position:fixed;inset:0;background:#fff;color:#111;overflow:auto;z-index:40;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px))}
+#inv[hidden]{display:none}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+@media print{body>*:not(#inv){display:none!important}#inv{position:static!important;padding:0!important}.np{display:none!important}}
+</style>
+</head>
+<body>
+<div class="brand">🚚 KS Transport</div>
+<div id="v"></div>
+<nav id="nav"></nav>
+<div id="m" hidden></div>
+<div id="inv" hidden><div class="bar np"><button class="btn" id="ip">Share PDF</button><button class="btn g" id="id" style="color:#111">Save PDF</button><button class="btn g" id="ic" style="color:#111">Close</button></div><div id="ib"></div></div>
+<div id="t" hidden></div>
+<script>
+/* standalone: no Claude services here, so data stays on this phone and files are saved with a normal download */
+window.claude={use:async n=>n==='downloads'?{save:async({filename,data})=>{const b=data instanceof Blob?data:new Blob([data],{type:filename.endsWith('.json')?'application/json':'application/octet-stream'});const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000)}}:null};
+const COLL=['vehicles','companies','tripLog','fuelLog','invoices','payments','service'];
+const S={vehicles:[],companies:[],tripLog:[],fuelLog:[],invoices:[],payments:[],service:[],cfg:{}};
+const T={trips:'tripLog',companies:'companies',fuel:'fuelLog',vehicles:'vehicles',service:'service'};
+const SC={
+vehicles:{one:'Vehicle',req:'no',f:[['no','Vehicle number','text'],['model','Make & model','text'],['driver','Driver name','text'],['_1','Insurance','h'],['insAmt','Amount (₹)','number',1],['insTill','Valid till','date',1],['_2','Fitness certificate','h'],['fcAmt','Amount (₹)','number',1],['fcTill','Valid till','date',1],['_3','Pollution certificate','h'],['pucAmt','Amount (₹)','number',1],['pucTill','Valid till','date',1],['_4','Road tax','h'],['taxAmt','Amount (₹)','number',1],['taxTill','Valid till','date',1],['_5','Permit','h'],['permitAmt','Amount (₹)','number',1],['permitTill','Valid till','date',1]]},
+companies:{one:'Company',req:'name',f:[['name','Company name','text'],['addr','Address','text'],['gst','GSTIN / tax ID (optional)','text'],['phone','Phone','tel']]},
+tripLog:{one:'Trip',req:'amount',f:[['date','Date','date'],['company','Company','@companies'],['other','Other customer (type name)','text'],['from','From (place)','text'],['to','To (place)','text'],['vehicle','Vehicle','@vehicles'],['km','Distance in km (optional)','number'],['qty','Quantity (trips)','number',1],['amount','Rate per trip (₹)','number',1],['paid','Payment',['Unpaid','Paid']]]},
+fuelLog:{one:'Fuel fill',req:'amount',f:[['date','Date','date'],['vehicle','Vehicle','@vehicles'],['ftype','Fuel type',['Diesel','Petrol','CNG','Other']],['liters','Liters','number',1],['amount','Amount (₹)','number',1],['prev','Last km reading','number',1],['cur','Current km reading','number',1]]},
+payments:{one:'Payment',req:'amount',f:[['date','Date','date'],['company','Company','@companies'],['other','Other customer (type name)','text'],['amount','Amount received (₹)','number'],['note','Note (cash, UPI, cheque)','text']]},
+service:{one:'Service entry',req:'type',f:[['date','Date','date'],['vehicle','Vehicle','@vehicles'],['type','Type',['Service','Repair','Tyre change','Battery','Other']],['amount','Amount (₹)','number',1],['km','Km reading','number',1],['nextTill','Next due date','date',1],['nextKm','Next due at km','number',1],['note','Note','text']]},
+settings:{one:'Invoice details',req:'name',f:[['name','Your business name','text'],['addr','Address','text'],['phone','Phone','tel'],['pay','Payment details (UPI / bank)','text']]}
+};
+const TABS=[['home','Home','🏠'],['trips','Trips','🧾'],['companies','Companies','🏢'],['fuel','Fuel','⛽'],['vehicles','Vehicles','🚚'],['more','More','☰']];
+const DOCS=[['ins','Insurance'],['fc','Fitness certificate'],['puc','Pollution certificate'],['tax','Road tax'],['permit','Permit']];
+let cur=null,ALLOC={};
+const biz=()=>(S.cfg&&S.cfg.name)||'KS Transport';
+const p2=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+const today=()=>ymd(new Date());
+let db=null,ready=false,got=false,tab='home',co=null,tt,mon=today().slice(0,7),tview='day',tday=today();
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rs=n=>'₹'+(+n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
+const fd=s=>s?String(s).split('-').reverse().join('-'):'';
+const lt=t=>(+t.amount||0)*(+t.qty||1);const sum=(a,k)=>a.reduce((x,y)=>x+(k?(+y[k]||0):lt(y)),0);
+const byId=(c,id)=>c==='settings'?S.cfg:S[c].find(x=>x.id===id);
+const label=(c,id)=>{const o=byId(c,id);return o?(c==='vehicles'?o.no:o.name):'—'};
+const days=d=>Math.round((new Date(d+'T00:00:00')-new Date(today()+'T00:00:00'))/864e5);
+const inM=x=>String(x.date||'').startsWith(mon);
+const mlabel=m=>new Date(m+'-01T00:00:00').toLocaleString('en-IN',{month:'long',year:'numeric'});
+const LS={load(){try{const d=JSON.parse(localStorage.getItem('tm')||'{}');COLL.forEach(c=>S[c]=d[c]||[]);S.cfg=d.cfg||{}}catch(e){}},put(){try{localStorage.setItem('tm',JSON.stringify(S))}catch(e){}}};
+let FS={fa:'',fb:'',fr:'',fk:'',ff:'1.25',fx:false};
+try{Object.assign(FS,JSON.parse(localStorage.getItem('tmfare')||'{}'))}catch(e){}
+function note(m){const t=$('#t');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,3500)}
+
+async function save(c,o){
+  if(c==='settings')o.id='invoice';else{o.id=o.id||'i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);if(c==='companies'&&!o.no)o.no=Math.max(0,...S.companies.map(x=>x.no||0))+1}
+  const d={...o};delete d.id;
+  if(db){try{await(c==='settings'?db.doc('settings/invoice'):db.collection(c).doc(o.id)).set(d)}catch(e){return note('Couldn’t save: '+(e.code||e.message||'try again'))}}
+  else{if(c==='settings')S.cfg=d;else{const i=S[c].findIndex(x=>x.id===o.id);if(i<0)S[c].push(o);else S[c][i]=o}LS.put();render()}
+  closeM();
+}
+async function del(c,id){
+  if(db){try{await db.collection(c).doc(id).delete()}catch(e){return note('Couldn’t delete: '+(e.code||e.message||'try again'))}}
+  else{S[c]=S[c].filter(x=>x.id!==id);LS.put();render()}
+  closeM();
+}
+function closeM(){$('#m').hidden=true;$('#m').innerHTML=''}
+
+function openM(c,id,pre){
+  const sc=SC[c],o=id?{...byId(c,id)}:{...pre};if(c==='settings'&&!o.name)o.name='KS Transport';
+  const fields=sc.f.map(([k,l,t,half])=>{if(t==='h')return `<h3 class="w">${l}</h3>`;
+    const v=o[k]!=null?o[k]:(!id&&k==='date'?today():k==='qty'?1:'');
+    let inp;
+    if(Array.isArray(t))inp=`<select name="${k}">${t.map(x=>`<option${x===(v||t[0])?' selected':''}>${x}</option>`).join('')}</select>`;
+    else if(t[0]==='@'){const cc=t.slice(1);inp=`<select name="${k}"><option value="">${k==='company'?'Other (type name)':'—'}</option>${S[cc].map(x=>`<option value="${esc(x.id)}"${x.id===v?' selected':''}>${esc(label(cc,x.id))}</option>`).join('')}</select>`}
+    else inp=`<input name="${k}" type="${t}" value="${esc(v)}"${t==='number'?' inputmode="decimal" step="any"':''}>`;
+    return `<label class="${half?'':'w'}">${l}${inp}</label>`}).join('');
+  const m=$('#m');
+  m.innerHTML=`<div class="sheet"><h2>${id?'Edit':'New'} ${sc.one.toLowerCase()}</h2><div class="fg">${fields}</div>${c==='tripLog'?'<div class="amt" id="tt" style="margin:4px 0 10px"></div>':''}<div class="row"><button class="btn" id="sv">Save</button><button class="btn g" id="cx">Cancel</button>${id&&c!=='settings'?'<button class="btn d" id="dl">Delete</button>':''}</div></div>`;
+  m.hidden=false;
+  m.onclick=e=>{if(e.target===m)closeM()};
+  $('#cx').onclick=closeM;
+  if(c==='payments'){const cs=$('#m [name="company"]'),ot=$('#m [name="other"]').closest('label'),sy=()=>{ot.style.display=cs.value?'none':''};cs.onchange=sy;sy()}
+  if(c==='tripLog'){const q=$('#m [name="qty"]'),a=$('#m [name="amount"]'),upd=()=>{const n=+q.value||1,r=+a.value||0;$('#tt').textContent='Total: '+rs(n*r)+(n>1?' ('+n+' × '+rs(r)+')':'')};q.oninput=a.oninput=upd;upd();const cs=$('#m [name="company"]'),ot=$('#m [name="other"]').closest('label'),sy=()=>{ot.style.display=cs.value?'none':''};cs.onchange=sy;sy()}
+  if(c==='fuelLog'&&!id){const vs=$('#m [name="vehicle"]');vs.onchange=()=>{const l=$('#m [name="prev"]');if(l.value)return;const p=S.fuelLog.filter(x=>x.vehicle===vs.value&&+x.cur>0).sort((x,y)=>y.cur-x.cur)[0];if(p)l.value=p.cur}}
+  $('#sv').onclick=()=>{
+    const d={...o};
+    sc.f.forEach(([k,,t])=>{if(t==='h')return;let v=$('#m [name="'+k+'"]').value;if(t==='number')v=v===''?0:+v;d[k]=v});if(c==='fuelLog'&&d.prev&&d.cur&&+d.cur<=+d.prev)return note('Current km must be more than the last km');if(c==='tripLog'){if(!(+d.qty>=1))d.qty=1;if(d.company)d.other=''}if(c==='payments'){if(d.company)d.other='';else if(!String(d.other||'').trim())return note('Choose a company or type a name')}
+    if(!d[sc.req])return note('Please fill in: '+sc.f.find(f=>f[0]===sc.req)[1]);
+    save(c,d);
+  };
+  const b=$('#dl');if(b)b.onclick=()=>{if(b.dataset.s)del(c,id);else{b.dataset.s=1;b.textContent='Tap again to delete'}};
+}
+
+/* ---------- Fare calculator ---------- */
+function pc(s){const m=String(s).match(/(-?\d+(?:\.\d+)?)\s*[,\s]\s*(-?\d+(?:\.\d+)?)/);if(!m)return null;const a=+m[1],b=+m[2];return Math.abs(a)<=90&&Math.abs(b)<=180?[a,b]:null}
+function hav(a,b){const r=x=>x*Math.PI/180,dl=r(b[0]-a[0]),dn=r(b[1]-a[1]);const h=Math.sin(dl/2)**2+Math.cos(r(a[0]))*Math.cos(r(b[0]))*Math.sin(dn/2)**2;return 12742*Math.asin(Math.sqrt(h))}
+function pgFare(){return `<div class="top"><h1>Fare calculator</h1></div>
+<div class="card n">
+<label>From (latitude, longitude)<input id="fa" placeholder="12.9716, 77.5946" autocomplete="off"></label>
+<label>To (latitude, longitude)<input id="fb" placeholder="13.0827, 80.2707" autocomplete="off"></label>
+<label>Rate per km (₹)<input id="fr" inputmode="decimal" placeholder="e.g. 25"></label>
+<label>Actual km (optional: type it if you know the real road distance)<input id="fk" inputmode="decimal"></label>
+<label>Road factor (road km ÷ straight-line km)<input id="ff" inputmode="decimal"></label>
+<label class="ck"><input type="checkbox" id="fx">Return trip (double the distance)</label>
+<div class="row"><button class="btn g" id="fc">Clear</button></div></div>
+<div id="fo"></div>
+<div class="note">Free and works offline. Distance is the straight line between the two points multiplied by the road factor, so it is an estimate. For an exact fare, tap “Open in Google Maps”, read the road km there (free, no sign-up) and type it into Actual km. Tip: in Google Maps, press and hold a spot, then tap the coordinates to copy them.</div>`}
+function calc(){
+  const a=pc(FS.fa),b=pc(FS.fb),r=+FS.fr||0,f=+FS.ff||1.25,ak=+FS.fk||0,m=FS.fx?2:1;
+  let used=0,st='',lab='Estimated road distance';
+  if(ak){used=ak*m;lab='Distance (your entry)'}
+  if(a&&b){const s=hav(a,b);if(!ak)used=s*f*m;st=`<div class="mut">Straight-line distance: ${s.toFixed(1)} km${m>1?' (one way)':''}</div>`}
+  const fare=used*r;let h='';
+  if(!used&&(FS.fa||FS.fb))h='<div class="note">Enter both points like 12.9716, 77.5946, or type the actual km.</div>';
+  else if(used){
+    h=`<div class="grid"><div class="stat"><span class="mut">${lab}</span><b>${used.toFixed(1)} km</b></div><div class="stat"><span class="mut">Fare${r?'':' (enter a rate)'}</span><b class="pos">${rs(fare)}</b></div></div>${st}
+    <div class="row">${fare>0?'<button class="btn" id="fs">Save as trip</button>':''}${a&&b?`<a class="btn g" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&origin=${a[0]},${a[1]}&destination=${b[0]},${b[1]}&travelmode=driving">Open in Google Maps</a>`:''}</div>`}
+  $('#fo').innerHTML=h;
+  const s=$('#fs');if(s)s.onclick=()=>openM('tripLog',null,{amount:Math.round(fare*100)/100,km:+used.toFixed(1)});
+}
+function wireFare(){
+  ['fa','fb','fr','fk','ff'].forEach(k=>{const e=$('#'+k);e.value=FS[k];e.oninput=()=>{FS[k]=e.value;try{localStorage.setItem('tmfare',JSON.stringify(FS))}catch(x){}calc()}});
+  const x=$('#fx');x.checked=FS.fx;x.onchange=()=>{FS.fx=x.checked;try{localStorage.setItem('tmfare',JSON.stringify(FS))}catch(e){}calc()};
+  $('#fc').onclick=()=>{FS={fa:'',fb:'',fr:'',fk:'',ff:'1.25',fx:false};try{localStorage.setItem('tmfare',JSON.stringify(FS))}catch(e){}['fa','fb','fr','fk','ff'].forEach(k=>{$('#'+k).value=FS[k]});x.checked=false;calc()};
+  calc();
+}
+
+/* ---------- Trips ---------- */
+const monBar=()=>`<label>Month<input type="month" id="mon" value="${mon}"></label>`;
+function tripCard(x,showCo){
+  return `<div class="card" data-e="tripLog|${esc(x.id)}"><div class="l"><b>${esc(x.from)||'?'} → ${esc(x.to)||'?'}</b><span class="amt">${rs(lt(x))}</span></div>
+  <div class="mut">${fd(x.date)}${showCo?(x.company&&byId('companies',x.company)?' · '+esc(label('companies',x.company)):x.other?' · '+esc(x.other):''):''}${x.vehicle?' · '+esc(label('vehicles',x.vehicle)):''}${x.km?' · '+x.km+' km':''}${(+x.qty||1)>1?' · '+x.qty+' trips × '+rs(x.amount):''}</div>
+  <div class="l">${pill(x)}</div></div>`;
+}
+const tripBar=()=>tview==='day'
+  ?`<div class="row" style="align-items:center;flex-wrap:nowrap"><button class="btn g" id="dprev" style="margin:0">‹</button><input type="date" id="tday" value="${tday}" style="margin:0;flex:1"><button class="btn g" id="dnext" style="margin:0">›</button></div>
+  <div class="mut" style="margin:8px 0 2px">${new Date(tday+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short',year:'numeric'})}</div>
+  <div class="row" style="margin:0 0 10px"><button class="btn s" id="vday">Day</button><button class="btn s g" id="vmon">Month</button><button class="btn s g" id="vtd">Today</button></div>`
+  :`${monBar()}<div class="row" style="margin:0 0 10px"><button class="btn s g" id="vday">Day</button><button class="btn s" id="vmon">Month</button></div>`;
+function pgTrips(){
+  const dv=tview==='day',a=S.tripLog.filter(t=>dv?String(t.date||'')===tday:inM(t)).sort((p,q)=>String(q.date).localeCompare(p.date));
+  const tot=sum(a),un=a.reduce((s,t)=>s+(t.paid==='Paid'?0:Math.max(0,lt(t)-(ALLOC[t.id]||0))),0);
+  return `<div class="top"><h1>Trips</h1><button class="btn" id="add">+ Add</button></div>${tripBar()}
+  <div class="grid"><div class="stat"><span class="mut">Total (${a.length} trips)</span><b>${rs(tot)}</b></div><div class="stat"><span class="mut">Not yet paid</span><b class="${un?'warn':''}">${rs(un)}</b></div></div>
+  ${a.length?a.map(x=>tripCard(x,true)).join(''):'<div class="empty">No trips '+(dv?'on this day':'in this month')+'.<br>Tap “+ Add” to enter one.</div>'}`;
+}
+
+/* ---------- Companies & invoices ---------- */
+function pgCo(){
+  if(co&&byId('companies',co))return pgCoD();
+  co=null;
+  const a=[...S.companies].sort((p,q)=>String(p.name).localeCompare(q.name));
+  return `<div class="top"><h1>Companies</h1><button class="btn" id="add">+ Add</button></div>${monBar()}
+  <div class="row"><button class="btn g s" id="cfg">Invoice details</button><button class="btn s" id="ia">All companies invoice PDF</button><button class="btn g s" id="hist">Invoice history</button></div>
+  <div style="height:10px"></div>
+  ${a.length?a.map(c=>{const t=S.tripLog.filter(x=>x.company===c.id&&inM(x));const un=owed(c.id);
+  return `<div class="card" data-c="${esc(c.id)}"><div class="l"><b>${esc(c.name)}</b><span class="amt">${rs(sum(t))}</span></div><div class="mut">${t.length} trips in ${mlabel(mon)}</div>${un>0?`<div class="warn">Outstanding ${rs(un)}</div>`:''}<div class="row"><button class="btn s" data-inv="${esc(c.id)}">Invoice</button><button class="btn s g" data-rp="${esc(c.id)}">Payment</button></div></div>`}).join(''):'<div class="empty">No companies yet.<br>Add a company, then add its trips.</div>'}${othSec()}${recentPay()}`;
+}
+function pgCoD(){
+  const c=byId('companies',co);
+  const a=S.tripLog.filter(t=>t.company===co&&inM(t)).sort((p,q)=>String(q.date).localeCompare(p.date));
+  const tot=sum(a),un=owed(co);
+  return `<div class="top"><h1>${esc(c.name)}</h1><button class="btn g" id="bk">Back</button></div>${monBar()}
+  <div class="grid"><div class="stat"><span class="mut">Total (${a.length} trips)</span><b>${rs(tot)}</b></div><div class="stat"><span class="mut">Outstanding (all trips)</span><b class="${un>0?'warn':''}">${rs(un)}</b></div></div>
+  <div class="row"><button class="btn" id="ad">+ Add trip</button><button class="btn" id="iv">Create invoice</button><button class="btn" id="rp">+ Payment received</button><button class="btn g" id="ec">Edit company</button><button class="btn d" id="dc">Delete company</button></div>
+  <h3>Trips in ${mlabel(mon)}</h3>${a.length?a.map(x=>tripCard(x,false)).join(''):'<div class="empty">No trips for this company in this month.</div>'}${paySec(co)}`;
+}
+async function markPaid(){
+  const a=S.tripLog.filter(t=>t.company===co&&inM(t)&&t.paid!=='Paid');
+  if(!a.length)return note('Nothing unpaid this month');
+  await Promise.all(a.map(t=>save('tripLog',{...t,paid:'Paid'})));note('Marked as paid');
+}
+const IVCSS='.iv{font:13px/1.35 Arial,Helvetica,sans-serif;color:#000;max-width:760px;margin:0 auto}.iv .tt{text-align:center;font-weight:700;font-size:16px;margin:2px 0 6px}.iv table{width:100%;border-collapse:collapse}.iv .bx{border:1px solid #000}.iv td,.iv th{border:1px solid #000;padding:4px 6px;vertical-align:top;text-align:left}.iv th{font-weight:400;font-size:12px;text-align:center}.iv .rows td{border-top:0;border-bottom:0}.iv .tot td{border:1px solid #000;font-weight:700;font-size:14px}.iv .r{text-align:right}.iv .c{text-align:center}.iv .sm{font-size:11px}.iv .big{font-size:16px}.iv .bo{font-weight:700;font-style:italic}.iv .gap td{height:40px}.iv .ft{text-align:center;font-size:11px;margin-top:6px}';const IVCSSold='.iv{font:14px/1.5 system-ui,Arial,sans-serif;color:#111;max-width:760px;margin:0 auto}.iv h1{font-size:24px;margin:0;color:#16325c}.iv h2{letter-spacing:3px;margin:16px 0 6px;color:#16325c;border-top:3px solid #16325c;padding-top:10px}.iv table{width:100%;border-collapse:collapse;margin:10px 0}.iv th{background:#16325c;color:#fff;padding:8px 6px;text-align:left}.iv td{border-bottom:1px solid #e3e6ec;padding:7px 6px;text-align:left}.iv tr:nth-child(even) td{background:#f5f7fa}.iv .r{text-align:right}.iv .tot{text-align:right;font-size:18px;font-weight:700;margin:8px 0}.iv .m{color:#555}';
+function invBody(c,a,no,x){
+  const g=S.cfg||{},q=t2(x),any=q.pd||q.prev||q.adv;
+  const N=n=>(+n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const ex=[];
+  if(any){ex.push(['Trips total',q.tot]);if(q.pd)ex.push(['Less: already paid',-q.pd]);if(q.prev)ex.push(['Previous unpaid balance',q.prev]);if(q.adv)ex.push(['Less: advance received',-q.adv])}
+  return `<div class='iv'><div class='tt'>INVOICE</div>
+  <table class='bx'><tr><td style='width:60%;padding:0;border:0'><div style='padding:6px'><b class='big'>${esc(biz())}</b><br>${esc(g.addr)}${g.phone?'<br>Phone: '+esc(g.phone):''}</div><div style='padding:6px;border-top:1px solid #000'><span class='sm'>Buyer (Bill to)</span><br><b>${esc(c.name)}</b>${c.addr?'<br>'+esc(c.addr):''}${c.gst?'<br>GSTIN: '+esc(c.gst):''}${c.phone?'<br>Phone: '+esc(c.phone):''}</div></td>
+  <td style='padding:0'><div style='display:flex'><div style='flex:1;padding:6px;border-right:1px solid #000;border-bottom:1px solid #000'><span class='sm'>Invoice No.</span><br><b>${esc(no)}</b></div><div style='flex:1;padding:6px;border-bottom:1px solid #000'><span class='sm'>Dated</span><br><b>${fd(x.date||today())}</b></div></div></td></tr></table>
+  <table class='bx rows'><tr><th>SI No.</th><th>Date</th><th>Description of Trip</th><th>Status</th><th>Quantity</th><th>Rate</th><th>per</th><th>Amount</th></tr>
+  ${a.map((t,i)=>`<tr><td class='c'>${i+1}</td><td>${fd(t.date)}</td><td>${esc(t.from)||'?'} to ${esc(t.to)||'?'}</td><td>${stT(t)}</td><td class='r'>${+t.qty||1}</td><td class='r'>${N(t.amount)}</td><td>Trip</td><td class='r'>${N(lt(t))}</td></tr>`).join('')}
+  ${ex.map(e=>`<tr><td></td><td></td><td class='r bo'>${e[0]}</td><td></td><td></td><td></td><td></td><td class='r bo'>${e[1]<0?'-':''}${N(Math.abs(e[1]))}</td></tr>`).join('')}
+  <tr class='gap'><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr class='tot'><td colspan='4' class='r'>${any?'Balance Due':'Total'}</td><td class='r'>${a.reduce((s,t)=>s+(+t.qty||1),0)}</td><td></td><td></td><td class='r'>${rs(q.due)}</td></tr></table>
+  <table class='bx'><tr><td><span class='sm'>Amount Chargeable (in words)</span><span class='sm' style='float:right'>E. &amp; O.E</span><br><b>${q.due>0?'INR '+words(q.due)+' Only':'NIL'}</b></td></tr></table>
+  <table class='bx'><tr><td style='width:50%'><u>Declaration</u><br><span class='sm'>We declare that this invoice shows the actual charges for the trips described and that all particulars are true and correct.</span></td><td style='padding:0'><div style='padding:6px;border-bottom:1px solid #000'><b>Company's Bank Details</b><br>${esc(g.pay)||'&nbsp;'}</div><div style='padding:6px;text-align:right'><b>for ${esc(biz())}</b><br><br><br>Authorised Signatory</div></td></tr></table>
+  <div class='ft'>This is a Computer Generated Invoice</div></div>`;
+}
+function invBodyOld(c,a,no,x){
+  const g=S.cfg||{};
+  return `<div class="iv"><h1>${esc(biz())}</h1><div class="m">${esc(g.addr)}${g.phone?'<br>Phone: '+esc(g.phone):''}</div>
+  <h2>INVOICE</h2><div>Invoice no: <b>${esc(no)}</b><br>Date: ${fd(today())}<br>Period: ${esc(x.per)}</div>
+  <p><b>Bill to</b><br>${esc(c.name)}<br>${esc(c.addr)}${c.gst?'<br>GSTIN: '+esc(c.gst):''}</p>
+  <table><tr><th>#</th><th>Date</th><th>From</th><th>To</th><th>Status</th><th class="r">Qty</th><th class="r">Rate</th><th class="r">Amount</th></tr>
+  ${a.map((t,i)=>`<tr><td>${i+1}</td><td>${fd(t.date)}</td><td>${esc(t.from)}</td><td>${esc(t.to)}</td><td>${t.paid==='Paid'?'Paid':'Unpaid'}</td><td class="r">${+t.qty||1}</td><td class="r">${rs(t.amount)}</td><td class="r">${rs(lt(t))}</td></tr>`).join('')}</table>
+  <div class="tot">${(()=>{const q=t2(x);return (q.pd||q.prev||q.adv)?`<div class="m" style="font-weight:400;font-size:14px">Total of trips in this period: ${rs(q.tot)}${q.pd?`<br>Less: already paid: ${rs(q.pd)}`:''}${q.prev?`<br>Previous unpaid balance: ${rs(q.prev)}`:''}${q.adv?`<br>Less: advance received: ${rs(q.adv)}`:''}</div>Balance due: ${rs(q.due)}`:'Total: '+rs(q.tot)})()}</div>${t2(x).due>0?`<p class="m">Amount in words: <b>Rupees ${words(t2(x).due)} Only</b></p>`:''}${g.pay?`<p class="m">Payment details: ${esc(g.pay)}</p>`:''}<p class="m">Thank you for your business.</p></div>`;
+}
+const addD=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return ymd(d)};
+function rng(p,d1,d2){
+  let f,t;
+  if(p==='tw'){f=wk(today());t=addD(f,6)}
+  else if(p==='lw'){f=addD(wk(today()),-7);t=addD(f,6)}
+  else if(p==='lm'){const n=new Date();f=ymd(new Date(n.getFullYear(),n.getMonth()-1,1));t=ymd(new Date(n.getFullYear(),n.getMonth(),0))}
+  else{f=d1;t=d2}
+  return{from:f,to:t,label:fd(f)+' to '+fd(t)};
+}
+const othKey=t=>String(t.other||'').trim().toLowerCase();
+const isO=id=>String(id).startsWith('o:');
+const hno=k=>{let h=0;for(const ch of k)h=(h*31+ch.charCodeAt(0))%1000;return String(h).padStart(3,'0')};
+const otherName=k=>String((S.tripLog.filter(t=>!t.company&&othKey(t)===k).sort((u,w)=>String(w.date).localeCompare(u.date))[0]||{}).other||k).trim();
+const tripsOf=id=>isO(id)?S.tripLog.filter(t=>!t.company&&othKey(t)===id.slice(2)):S.tripLog.filter(t=>t.company===id);
+const partyOf=id=>isO(id)?{id,name:otherName(id.slice(2)),no:hno(id.slice(2))}:byId('companies',id);
+function othSec(){
+  const ks=Object.create(null);
+  S.tripLog.forEach(t=>{const k=othKey(t);if(!t.company&&k)(ks[k]=ks[k]||[]).push(t)});
+  const l=Object.keys(ks).sort();
+  if(!l.length)return '';
+  return '<h3>Other customers (typed names)</h3>'+l.map(k=>{const m=ks[k].filter(inM),un=owed('o:'+k);
+    return `<div class="card n"><div class="l"><b>${esc(otherName(k))}</b><span class="amt">${rs(sum(m))}</span></div><div class="mut">${m.length} trips in ${mlabel(mon)}</div>${un>0?`<div class="warn">Outstanding ${rs(un)}</div>`:''}<div class="row"><button class="btn s" data-inv="o:${esc(k)}">Invoice</button><button class="btn s g" data-rp="o:${esc(k)}">Payment</button></div></div>`}).join('');
+}
+function mkItem(c,p,d1,d2,pick,adv,inc){
+  const all=tripsOf(c.id),AL=calcAlloc();
+  let a,from,to,per;
+  if(p==='pk'){a=all.filter(t=>pick.includes(t.id));const ds=a.map(t=>t.date).filter(Boolean).sort();from=ds[0]||'';to=ds[ds.length-1]||today();per='Selected trips'}
+  else{const r=rng(p,d1,d2);from=r.from;to=r.to;per=r.label;a=all.filter(t=>t.date>=from&&t.date<=to)}
+  a.sort((u,w)=>String(u.date).localeCompare(w.date));
+  const ids=a.map(t=>t.id);
+  const prev=inc&&from?all.filter(t=>t.paid!=='Paid'&&t.date&&t.date<from&&!ids.includes(t.id)).reduce((s,t)=>s+Math.max(0,lt(t)-(AL[t.id]||0)),0):0;
+  a=a.map(t=>({...t,alloc:AL[t.id]||0}));
+  return{c,a,per,prev,adv};
+}
+const t2=x=>{const tot=sum(x.a),pd=x.a.reduce((s,t)=>s+(t.paid==='Paid'?lt(t):Math.min(lt(t),+t.alloc||0)),0),prev=+x.prev||0,adv=+x.adv||0;return{tot,pd,prev,adv,due:tot-pd+prev-adv}};
+const nextSeq=()=>Math.max(0,...S.invoices.map(i=>+i.seq||0))+1;
+const fmtNo=n=>'KS-'+String(n).padStart(4,'0');
+const recOf=(z,seq)=>({seq,no:fmtNo(seq),date:z.date||today(),pid:z.c.id||'',name:z.c.name||'',addr:z.c.addr||'',gst:z.c.gst||'',phone:z.c.phone||'',per:z.per||'',prev:+z.prev||0,adv:+z.adv||0,due:t2(z).due,a:z.a.map(t=>({date:t.date||'',from:t.from||'',to:t.to||'',qty:+t.qty||1,amount:+t.amount||0,paid:t.paid==='Paid'?'Paid':'Unpaid',alloc:+t.alloc||0}))});
+function paintInv(){$('#ib').innerHTML='<style>'+IVCSS+'</style>'+(cur.saved?'':`<div class='np' style='color:#555;font-size:12px;margin-bottom:8px'>The invoice number becomes final when you tap Share PDF or Save PDF.</div>`)+cur.items.map(z=>invBody(z.c,z.a,z.no,z)).join('<hr>')}
+async function commitInv(){
+  if(cur.saved)return;
+  const b=nextSeq();
+  for(let i=0;i<cur.items.length;i++){const z=cur.items[i];z.no=fmtNo(b+i);await save('invoices',recOf(z,b+i))}
+  cur.saved=true;paintInv();
+}
+function showInv(items,saved){
+  if(!saved){const b=nextSeq();items.forEach((z,i)=>{z.no=fmtNo(b+i);z.date=today()})}
+  cur={items,saved:!!saved};paintInv();
+  $('#inv').hidden=false;
+  $('#ip').onclick=()=>pdfOut(true);$('#id').onclick=()=>pdfOut(false);$('#ic').onclick=()=>{$('#inv').hidden=true};
+}
+function showSaved(r){showInv([{c:{id:r.pid,name:r.name,addr:r.addr,gst:r.gst,phone:r.phone},a:r.a||[],per:r.per,prev:r.prev,adv:r.adv,no:r.no,date:r.date}],true)}
+function openHist(){
+  const m=$('#m');
+  m.innerHTML=`<div class='sheet'><h2>Invoice history</h2><label>Search<input id='hq' placeholder='Invoice number or customer name' autocomplete='off'></label><div id='hl'></div><div class='row'><button class='btn g' id='hx'>Close</button></div></div>`;
+  m.hidden=false;m.onclick=e=>{if(e.target===m)closeM()};
+  const draw=()=>{
+    const q=$('#hq').value.trim().toLowerCase();
+    const a=[...S.invoices].sort((u,w)=>(+w.seq||0)-(+u.seq||0)).filter(r=>!q||String(r.no).toLowerCase().includes(q)||String(r.name).toLowerCase().includes(q));
+    $('#hl').innerHTML=a.length?a.slice(0,100).map(r=>`<div class='card' data-h='${esc(r.id)}'><div class='l'><b>${esc(r.no)}</b><span class='amt'>${rs(r.due)}</span></div><div class='mut'>${esc(r.name)} · ${fd(r.date)}</div></div>`).join(''):`<div class='empty'>No invoices found.</div>`;
+    $('#hl').querySelectorAll('[data-h]').forEach(e=>e.onclick=()=>{const r=byId('invoices',e.dataset.h);if(r){closeM();showSaved(r)}});
+  };
+  $('#hq').oninput=draw;$('#hx').onclick=closeM;draw();
+}
+function openInvDlg(id){
+  const all=id?tripsOf(id).sort((u,w)=>String(w.date).localeCompare(u.date)):[];
+  const m=$('#m');
+  m.innerHTML=`<div class="sheet"><h2>${id?'Invoice for '+esc(partyOf(id).name):'Invoices for all companies'}</h2>
+  <label>Invoice period<select id="pp"><option value="lw">Last week</option><option value="tw">This week</option><option value="lm">Last month</option><option value="cd">Custom dates</option>${id?'<option value="pk">Pick trips</option>':''}</select></label>
+  <div class="fg" id="pcd" style="display:none"><label>From<input type="date" id="pd1"></label><label>To<input type="date" id="pd2"></label></div>
+  <div id="ppl" style="display:none;max-height:220px;overflow:auto;margin-bottom:10px">${all.map(t=>`<label class="ck" style="margin-bottom:8px"><input type="checkbox" value="${esc(t.id)}"${t.paid==='Paid'?'':' checked'}>${fd(t.date)} · ${esc(t.from)||'?'} → ${esc(t.to)||'?'} · ${rs(lt(t))} · ${t.paid==='Paid'?'Paid':'Unpaid'}</label>`).join('')||'<div class="mut">No trips for this company yet.</div>'}</div>
+  <label class="ck"><input type="checkbox" id="ppv" checked>Add previous unpaid balance (amount only)</label>
+  ${id?'<label style="margin-top:10px">Advance received (₹, optional)<input id="pav" type="number" inputmode="decimal" step="any"></label>':'<div class="note">Advance received can be entered when you create a single company’s invoice.</div>'}
+  <div class="row"><button class="btn" id="pgo">Create invoice</button><button class="btn g" id="pcx">Cancel</button></div></div>`;
+  m.hidden=false;m.onclick=e=>{if(e.target===m)closeM()};
+  const pp=$('#pp');
+  pp.onchange=()=>{$('#pcd').style.display=pp.value==='cd'?'grid':'none';$('#ppl').style.display=pp.value==='pk'?'block':'none'};
+  $('#pcx').onclick=closeM;
+  $('#pgo').onclick=()=>{
+    const p=pp.value,d1=$('#pd1').value,d2=$('#pd2').value;
+    if(p==='cd'&&(!d1||!d2||d1>d2))return note('Choose a start date and an end date');
+    const pick=[...document.querySelectorAll('#ppl input:checked')].map(e=>e.value);
+    if(p==='pk'&&!pick.length)return note('Pick at least one trip');
+    const adv=id?(+$('#pav').value||0):0,inc=$('#ppv').checked;
+    const cs=id?[partyOf(id)]:[...S.companies].sort((u,w)=>String(u.name).localeCompare(String(w.name)));
+    const items=cs.map(c=>mkItem(c,p,d1,d2,pick,adv,inc)).filter(z=>z.a.length);
+    if(!items.length)return note('No trips found for that period');
+    closeM();showInv(items);
+  };
+}
+function openInv(id){openInvDlg(id)}
+
+function openAll(){openInvDlg(null)}
+/* ---------- PDF ---------- */
+function makePdfs(it){const d=new window.jspdf.jsPDF({unit:'mm',format:'a4'});it.forEach((x,i)=>{if(i)d.addPage();drawInv(d,x.c,x.a,x.no,x)});return d}
+function words(n){
+  n=Math.round(Math.abs(+n||0));
+  if(!n)return 'Zero';
+  const o=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'],t=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  const b=v=>v<20?o[v]:t[Math.floor(v/10)]+(v%10?' '+o[v%10]:'');
+  const h=v=>(v>99?o[Math.floor(v/100)]+' Hundred'+(v%100?' ':''):'')+(v%100?b(v%100):'');
+  let s='';
+  [[1e7,'Crore'],[1e5,'Lakh'],[1e3,'Thousand']].forEach(([v,l])=>{if(n>=v){s+=h(Math.floor(n/v))+' '+l+' ';n%=v}});
+  return (s+h(n)).trim();
+}
+function drawInv(d,c,a,no,x){
+  const g=S.cfg||{},W=210,L=10,RT=200,BW=190,CX=[10,21,42,108,126,142,162,172,200];
+  const N=n=>(+n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const SN=v=>(v<0?'-':'')+N(Math.abs(v));
+  const ln=(x1,y1,x2,y2)=>d.line(x1,y1,x2,y2);
+  const T=(s,xx,yy,o)=>d.text(String(s),xx,yy,o);
+  const fs=(sz,st)=>{d.setFont('helvetica',st||'normal');d.setFontSize(sz)};
+  const wr=(s,w)=>d.splitTextToSize(String(s||''),w);
+  const ink=()=>{d.setTextColor(0,0,0);d.setDrawColor(0,0,0);d.setLineWidth(0.25)};
+  const mid=i=>(CX[i]+CX[i+1])/2;
+  ink();
+  fs(13,'bold');T('INVOICE',W/2,9,{align:'center'});
+  const top=14;
+  fs(9);
+  const sl=[...(g.addr?wr(g.addr,104):[]),...(g.phone?['Phone: '+g.phone]:[])].slice(0,4);
+  const bl=[...(c.addr?wr(c.addr,104):[]),...(c.gst?['GSTIN: '+c.gst]:[]),...(c.phone?['Phone: '+c.phone]:[])].slice(0,5);
+  const hS=11+sl.length*4.3+2,hB=15+bl.length*4.3,H1=Math.max(hS+hB,34);
+  d.rect(L,top,BW,H1);ln(118,top,118,top+H1);ln(L,top+hS,118,top+hS);
+  fs(11,'bold');T(wr(biz(),104)[0],L+2,top+6.5);
+  fs(9);sl.forEach((t,i)=>T(t,L+2,top+11.5+i*4.3));
+  fs(8);T('Buyer (Bill to)',L+2,top+hS+4);
+  fs(10.5,'bold');T(wr(c.name,104)[0],L+2,top+hS+9.5);
+  fs(9);bl.forEach((t,i)=>T(t,L+2,top+hS+14.5+i*4.3));
+  ln(118,top+11,RT,top+11);ln(159,top,159,top+11);
+  fs(8);T('Invoice No.',120,top+4);T('Dated',161,top+4);
+  fs(10,'bold');T(wr(no,36)[0],120,top+9.3);T(fd(x.date||today()),161,top+9.3);
+  const hh=8,lim=221;
+  let ty=top+H1,y=ty;
+  const head=()=>{d.rect(L,ty,BW,hh);CX.slice(1,-1).forEach(v=>ln(v,ty,v,ty+hh));fs(8.5);['SI No.','Date','Description of Trip','Status','Quantity','Rate','per','Amount'].forEach((h,i)=>T(h,mid(i),ty+5.4,{align:'center'}));y=ty+hh};
+  head();
+  fs(9);
+  const rows=a.map(t=>({t,ds:wr(String(t.from||'?')+' to '+String(t.to||'?'),62).slice(0,2)}));
+  const q=t2(x),any=q.pd||q.prev||q.adv,ex=[];
+  if(any){ex.push(['Trips total',q.tot]);if(q.pd)ex.push(['Less: already paid',-q.pd]);if(q.prev)ex.push(['Previous unpaid balance',q.prev]);if(q.adv)ex.push(['Less: advance received',-q.adv])}
+  const need=h=>{if(y+h>lim){CX.forEach(v=>ln(v,ty,v,y));ln(L,y,RT,y);d.addPage();ink();ty=14;head()}};
+  rows.forEach(({t,ds},i)=>{
+    const rh=ds.length*4.2+3;need(rh);
+    const by=y+4;fs(9);
+    T(i+1,mid(0),by,{align:'center'});T(fd(t.date),CX[1]+1.5,by);
+    ds.forEach((s,k)=>T(s,CX[2]+2,by+k*4.2));
+    const ss=stT(t);if(ss==='Paid')d.setTextColor(26,127,75);else if(ss==='Part paid')d.setTextColor(31,90,166);else d.setTextColor(183,121,31);
+    T(ss,CX[3]+2,by);d.setTextColor(0,0,0);
+    T(+t.qty||1,CX[5]-2,by,{align:'right'});T(N(t.amount),CX[6]-2,by,{align:'right'});T('Trip',CX[6]+1.5,by);T(N(lt(t)),RT-2,by,{align:'right'});
+    y+=rh});
+  ex.forEach(e=>{need(7);fs(9,'bolditalic');T(e[0],CX[3]-2,y+4.5,{align:'right'});fs(9,'bold');T(SN(e[1]),RT-2,y+4.5,{align:'right'});y+=7});
+  const ey=Math.min(Math.max(y,ty+hh+50),lim);
+  CX.forEach(v=>ln(v,ty,v,ey));ln(L,ey,RT,ey);
+  d.rect(L,ey,BW,8);[CX[4],CX[5],CX[6],CX[7]].forEach(v=>ln(v,ey,v,ey+8));
+  fs(10,'bold');T(any?'Balance Due':'Total',CX[3]-2,ey+5.6,{align:'right'});
+  T(a.reduce((s,t)=>s+(+t.qty||1),0),mid(4),ey+5.6,{align:'center'});
+  rm(d,N(q.due),RT-2,ey+5.6,10);
+  const y2=ey+8;d.rect(L,y2,BW,13);
+  fs(8);T('Amount Chargeable (in words)',L+2,y2+4);T('E. & O.E',RT-2,y2+4,{align:'right'});
+  fs(10,'bold');T(q.due>0?wr('INR '+words(q.due)+' Only',180)[0]:'NIL',L+2,y2+10);
+  const y3=y2+13;d.rect(L,y3,BW,38);ln(105,y3,105,y3+38);ln(105,y3+21,RT,y3+21);
+  fs(8.5);T('Declaration',L+2,y3+5);ln(L+2,y3+5.8,L+17,y3+5.8);
+  wr('We declare that this invoice shows the actual charges for the trips described and that all particulars are true and correct.',92).forEach((s,i)=>T(s,L+2,y3+10.5+i*4));
+  fs(8.5,'bold');T(`Company's Bank Details`,107,y3+5);
+  fs(8.5);wr(g.pay||'',92).slice(0,3).forEach((s,i)=>T(s,107,y3+10+i*4));
+  fs(9.5,'bold');T('for '+wr(biz(),80)[0],RT-2,y3+27,{align:'right'});
+  fs(8.5);T('Authorised Signatory',RT-2,y3+36,{align:'right'});
+  T('This is a Computer Generated Invoice',W/2,y3+43,{align:'center'});
+  ink();
+  return d;
+}
+function drawInvOld(d,c,a,no,x){
+  const g=S.cfg||{},W=210,M=15,NV=[22,50,92];
+  const N=n=>(+n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const R=n=>'Rs. '+N(n);
+  const cut=(s,w)=>d.splitTextToSize(String(s||''),w)[0]||'';
+  const tc=(r,gg,b)=>d.setTextColor(r,gg,b);
+  const lab=(t,xx,yy)=>{tc(110,120,135);d.setFont('helvetica','bold');d.setFontSize(8);d.text(t,xx,yy)};
+  d.setFillColor(...NV);d.rect(0,0,W,34,'F');
+  tc(255,255,255);d.setFont('helvetica','bold');d.setFontSize(20);d.text(cut(biz(),110),M,15);
+  d.setFont('helvetica','normal');d.setFontSize(9);
+  let hy=21;[g.addr,g.phone?'Phone: '+g.phone:''].filter(Boolean).forEach(t=>{d.text(cut(t,110),M,hy);hy+=5});
+  d.setFont('helvetica','bold');d.setFontSize(24);d.text('INVOICE',W-M,19,{align:'right'});
+  let y=46;
+  lab('BILL TO',M,y);
+  tc(28,36,48);d.setFont('helvetica','bold');d.setFontSize(12);d.text(cut(c.name,95),M,y+6);
+  d.setFont('helvetica','normal');d.setFontSize(9.5);
+  let by=y+12;[c.addr,c.gst?'GSTIN: '+c.gst:'',c.phone?'Phone: '+c.phone:''].filter(Boolean).forEach(t=>{d.splitTextToSize(String(t),95).slice(0,2).forEach(l=>{d.text(l,M,by);by+=5})});
+  [['Invoice no',no],['Invoice date',fd(today())],['Period',x.per]].forEach(([k,v],i)=>{const yy=y+i*6;tc(110,120,135);d.setFont('helvetica','normal');d.setFontSize(9);d.text(k,125,yy);tc(28,36,48);d.setFont('helvetica','bold');d.text(cut(v,45),W-M,yy,{align:'right'})});
+  y=Math.max(by,y+20)+4;
+  const head=()=>{d.setFillColor(...NV);d.rect(M,y-5.5,W-2*M,8,'F');tc(255,255,255);d.setFont('helvetica','bold');d.setFontSize(9);d.text('#',M+2,y);d.text('Date',M+9,y);d.text('From',M+31,y);d.text('To',M+66,y);d.text('Status',M+101,y);d.text('Qty',140,y,{align:'right'});d.text('Rate (Rs.)',166,y,{align:'right'});d.text('Amount (Rs.)',W-M-2,y,{align:'right'});y+=8};
+  head();
+  a.forEach((t,i)=>{
+    if(y>262){d.addPage();y=20;head()}
+    if(i%2){d.setFillColor(245,247,250);d.rect(M,y-5,W-2*M,8,'F')}
+    tc(28,36,48);d.setFont('helvetica','normal');d.setFontSize(9);
+    d.text(String(i+1),M+2,y);d.text(fd(t.date),M+9,y);d.text(cut(t.from,31),M+31,y);d.text(cut(t.to,31),M+66,y);
+    if(t.paid==='Paid')tc(26,127,75);else tc(183,121,31);
+    d.text(t.paid==='Paid'?'Paid':'Unpaid',M+101,y);tc(28,36,48);
+    d.text(String(+t.qty||1),140,y,{align:'right'});d.text(N(t.amount),166,y,{align:'right'});d.text(N(lt(t)),W-M-2,y,{align:'right'});
+    d.setDrawColor(227,230,236);d.line(M,y+3,W-M,y+3);y+=8});
+  const q=t2(x),any=q.pd||q.prev||q.adv,L=[['Total of trips in this period',q.tot]];
+  if(q.pd)L.push(['Less: already paid',q.pd]);if(q.prev)L.push(['Previous unpaid balance',q.prev]);if(q.adv)L.push(['Less: advance received',q.adv]);
+  if(y>200){d.addPage();y=20}
+  y+=8;const ty=y;
+  if(any)L.forEach(([k,v])=>{tc(90,100,115);d.setFont('helvetica','normal');d.setFontSize(9.5);d.text(k,117,y);tc(28,36,48);d.text(R(v),W-M-2,y,{align:'right'});y+=6.5});
+  d.setFillColor(...NV);d.rect(115,y-4.5,W-M-115,10,'F');tc(255,255,255);d.setFont('helvetica','bold');d.setFontSize(11);d.text(any?'BALANCE DUE':'TOTAL',118,y+2);d.text(R(q.due),W-M-3,y+2,{align:'right'});
+  const ey=y+10;let ly=ty;
+  if(q.due>0){lab('AMOUNT IN WORDS',M,ly);tc(28,36,48);d.setFont('helvetica','normal');d.setFontSize(9.5);ly+=5;d.splitTextToSize('Rupees '+words(q.due)+' Only',95).forEach(l=>{d.text(l,M,ly);ly+=5});ly+=3}
+  if(g.pay){lab('PAYMENT DETAILS',M,ly);tc(28,36,48);d.setFont('helvetica','normal');d.setFontSize(9.5);ly+=5;d.splitTextToSize(String(g.pay),95).forEach(l=>{d.text(l,M,ly);ly+=5})}
+  let sy=Math.max(ey,ly)+14;if(sy>266){d.addPage();sy=30}
+  tc(28,36,48);d.setFont('helvetica','bold');d.setFontSize(9.5);d.text('For '+cut(biz(),60),W-M,sy,{align:'right'});
+  d.setDrawColor(150,158,170);d.line(W-M-55,sy+16,W-M,sy+16);
+  d.setFont('helvetica','normal');tc(110,120,135);d.setFontSize(8.5);d.text('Authorised signatory',W-M,sy+21,{align:'right'});
+  d.setFontSize(9);d.text('Thank you for your business.',W/2,288,{align:'center'});
+  tc(0,0,0);
+  return d;
+}
+async function pdfOut(share){
+  if(!window.jspdf)return note('PDF tool couldn’t load. Check your internet and reload the page.');
+  if(!cur)return;
+  await commitInv();
+  let blob;try{blob=makePdfs(cur.items).output('blob')}catch(e){return note('Couldn’t create the PDF')}
+  const f0=cur.items[0],f1=cur.items[cur.items.length-1],cl=s=>String(s).replace(/[^A-Za-z0-9]+/g,'_');
+  const fn=(cur.items.length===1?f0.no+'-'+cl(f0.c.name):cl(biz())+'-'+f0.no+'-to-'+f1.no).slice(0,80)+'.pdf';
+  if(share&&navigator.canShare){try{const f=new File([blob],fn,{type:'application/pdf'});if(navigator.canShare({files:[f]})){await navigator.share({files:[f],title:fn});return}}catch(e){if(e&&e.name==='AbortError')return}}
+  try{const dl=await claude.use('downloads');if(!dl)return note('Saving isn’t available here');await dl.save({filename:fn,data:blob});note('PDF saved. Open it from your files to share.')}
+  catch(e){if(!e||e.code!=='declined')note('Couldn’t save the PDF: '+((e&&(e.code||e.message))||'not available'))}
+}
+/* ---------- Fuel ---------- */
+function mil(x){const km=+x.cur-+x.prev,L=+x.liters;return(+x.prev>0&&+x.cur>+x.prev&&L>0)?{km,m:km/L,pk:(+x.amount||0)/km}:null}
+const wk=s=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()-(d.getDay()+6)%7);return ymd(d)};
+function pgFuel(){
+  const a=S.fuelLog.filter(inM);
+  const g={};a.forEach(x=>{(g[wk(x.date)]=g[wk(x.date)]||[]).push(x)});
+  const ws=Object.keys(g).sort().reverse();
+  const ok=a.filter(mil),km=ok.reduce((s,x)=>s+mil(x).km,0),L=sum(ok,'liters'),am=sum(ok);
+  const rep=S.vehicles.map(v=>{const e=ok.filter(x=>x.vehicle===v.id);if(!e.length)return '';const k=e.reduce((s,x)=>s+mil(x).km,0),l=sum(e,'liters');
+    return `<div class="card n"><div class="l"><b>${esc(v.no)}</b><span class="amt">${(k/l).toFixed(1)} km/l</span></div><div class="mut">${k.toFixed(0)} km · ${l.toFixed(1)} L · ${rs(sum(e)/k)} per km</div></div>`}).join('');
+  return `<div class="top"><h1>Fuel</h1><button class="btn" id="add">+ Add</button></div>${monBar()}
+  <div class="grid"><div class="stat"><span class="mut">Fuel spent</span><b>${rs(sum(a))}</b><span class="mut">${sum(a,'liters').toFixed(1)} L</span></div><div class="stat"><span class="mut">Average mileage</span><b>${km?(km/L).toFixed(1)+' km/l':'—'}</b><span class="mut">${km?rs(am/km)+' per km':'needs km readings'}</span></div></div>
+  ${rep?`<h3>Mileage report by vehicle</h3>${rep}`:''}
+  ${ws.length?ws.map(w=>`<h3>Week of ${fd(w)} · ${rs(sum(g[w]))}</h3>`+g[w].sort((p,q)=>String(q.date).localeCompare(p.date)).map(x=>
+  `<div class="card" data-e="fuelLog|${esc(x.id)}"><div class="l"><b>${esc(x.ftype||'Fuel')} · ${x.liters||0} L</b><span class="amt">${rs(x.amount)}</span></div>
+  <div class="mut">${fd(x.date)}${x.vehicle?' · '+esc(label('vehicles',x.vehicle)):''}${mil(x)?` · ${mil(x).km.toFixed(0)} km · ${mil(x).m.toFixed(1)} km/l · ${rs(mil(x).pk)}/km`:''}</div></div>`).join('')).join(''):'<div class="empty">No fuel entries in this month yet.<br>Tap “+ Add” to enter one.</div>'}
+  <div class="note">For correct mileage, fill the tank full each time and enter the km reading from the meter. The last km reading fills in by itself from your previous entry.</div>`;
+}
+
+/* ---------- Vehicles ---------- */
+function docLine(v,[k,t]){
+  const a=+v[k+'Amt']||0,l=v[k+'Till'];
+  if(!a&&!l)return '';
+  let s='';if(l){const d=days(l);s=` · valid till ${fd(l)} <b class="${d<0?'neg':d<=30?'warn':''}">${d<0?'(expired)':'('+d+' days left)'}</b>`}
+  return `<div class="mut">${t}: ${a?rs(a):'—'}${s}</div>`;
+}
+function pgVeh(){
+  const a=[...S.vehicles].sort((p,q)=>String(p.no).localeCompare(q.no));
+  return `<div class="top"><h1>Vehicles</h1><button class="btn" id="add">+ Add</button></div>${monBar()}
+  ${a.length?a.map(v=>{const inc=sum(S.tripLog.filter(x=>x.vehicle===v.id&&inM(x))),ex=sum(S.fuelLog.filter(x=>x.vehicle===v.id&&inM(x)))+sum(S.service.filter(x=>x.vehicle===v.id&&inM(x))),dc=DOCS.reduce((s,[k])=>s+(+v[k+'Amt']||0),0),dl=DOCS.map(d=>docLine(v,d)).join('');
+  return `<div class="card" data-e="vehicles|${esc(v.id)}"><div class="l"><b>${esc(v.no)}</b><span class="mut">${esc(v.model)}</span></div>${v.driver?`<div class="mut">Driver: ${esc(v.driver)}</div>`:''}
+  <div class="mut">${mlabel(mon)}: income ${rs(inc)} · fuel &amp; service ${rs(ex)} · <b class="${inc-ex<0?'neg':'pos'}">${rs(inc-ex)} profit</b></div>
+  <h3>Insurance, fitness and other documents</h3>${dl||'<div class="mut">Tap to add insurance, fitness, pollution, tax and permit details.</div>'}${dc?`<div class="mut">Document costs: ${rs(dc)}</div>`:''}</div>`}).join(''):'<div class="empty">No vehicles yet.<br>Add your vehicles first, then pick them in trips, fuel and service entries.</div>'}
+  <div class="note">Tap a vehicle to add or update its insurance, fitness, pollution, tax and permit details. Dates within 30 days show in orange.</div>
+  <h3>Backup &amp; restore</h3><div class="card n"><div class="mut">Last backup: ${lastBk()}</div><div class="mut">Every backup uses the same file name. Delete older copies in your Files app so only the newest stays.</div><div class="row"><button class="btn" id="bk1">Backup now</button><button class="btn g" id="rs1">Restore from file</button></div><input type="file" id="rsf" accept=".json,application/json" style="display:none"></div>`;
+}
+
+const lastBk=()=>{try{const t=localStorage.getItem('tmlast');return t?new Date(t).toLocaleString('en-IN'):'never'}catch(e){return 'never'}};
+async function doBackup(){
+  const data=JSON.stringify({app:'KS Transport',v:1,saved:new Date().toISOString(),data:S});
+  try{const dl=await claude.use('downloads');if(!dl)return note('Saving isn’t available here');
+    await dl.save({filename:'KS-Transport-backup.json',data});
+    try{localStorage.setItem('tmlast',new Date().toISOString())}catch(e){}
+    note('Backup saved. Delete older copies in your Files app.');render()}
+  catch(e){if(!e||e.code!=='declined')note('Couldn’t save the backup: '+((e&&(e.code||e.message))||'not available'))}
+}
+async function doRestore(f){
+  try{
+    const j=JSON.parse(await f.text()),d=j&&j.data;
+    if(!d||!Array.isArray(d.tripLog))return note('This isn’t a KS Transport backup file');
+    let n=0;
+    for(const c of COLL)for(const o of (d[c]||[])){if(o&&o.id){await save(c,{...o});n++}}
+    if(d.cfg&&d.cfg.name)await save('settings',{...d.cfg});
+    note('Restored '+n+' records')
+  }catch(e){note('Couldn’t restore: '+((e&&(e.message||e.code))||'bad file'))}
+}
+/* ---------- Payments, home, report, service ---------- */
+const pkey=r=>r.company||(othKey(r)?'o:'+othKey(r):'');
+const owed=k=>sum(tripsOf(k).filter(t=>t.paid!=='Paid'))-sum(S.payments.filter(p=>pkey(p)===k));
+function calcAlloc(){
+  const m=Object.create(null),g=Object.create(null),pay=Object.create(null);
+  S.tripLog.forEach(t=>{const k=pkey(t);if(k&&t.paid!=='Paid')(g[k]=g[k]||[]).push(t)});
+  S.payments.forEach(p=>{const k=pkey(p);if(k)pay[k]=(pay[k]||0)+(+p.amount||0)});
+  Object.keys(g).forEach(k=>{let r=pay[k]||0;g[k].sort((u,w)=>String(u.date).localeCompare(w.date)).forEach(t=>{const a=Math.min(lt(t),Math.max(r,0));m[t.id]=a;r-=a})});
+  return m;
+}
+const stT=t=>(t.paid==='Paid'||(+t.alloc||0)>=lt(t)-0.005)?'Paid':((+t.alloc||0)>0?'Part paid':'Unpaid');
+const pill=x=>{const s=stT({...x,alloc:ALLOC[x.id]||0});return `<span class='pill ${s==='Paid'?'Paid':s==='Unpaid'?'Unpaid':'Part'}'>${s}</span>`};
+const payCard=p=>`<div class='card' data-e='payments|${esc(p.id)}'><div class='l'><b>${rs(p.amount)}</b><span class='mut'>${fd(p.date)}</span></div>${p.note?`<div class='mut'>${esc(p.note)}</div>`:''}</div>`;
+function paySec(k){
+  const a=S.payments.filter(p=>pkey(p)===k).sort((u,w)=>String(w.date).localeCompare(u.date));
+  return '<h3>Payments received</h3>'+(a.length?a.map(payCard).join(''):`<div class='empty'>No payments recorded yet.</div>`);
+}
+function recentPay(){
+  const a=[...S.payments].sort((u,w)=>String(w.date).localeCompare(u.date)).slice(0,8);
+  if(!a.length)return '';
+  return '<h3>Recent payments</h3>'+a.map(p=>`<div class='card' data-e='payments|${esc(p.id)}'><div class='l'><b>${rs(p.amount)}</b><span class='mut'>${fd(p.date)}</span></div><div class='mut'>${esc(p.company&&byId('companies',p.company)?label('companies',p.company):p.other||'')}${p.note?' · '+esc(p.note):''}</div></div>`).join('');
+}
+function pgHome(){
+  const m=today().slice(0,7),ms=x=>String(x.date||'').startsWith(m);
+  const inc=sum(S.tripLog.filter(ms)),cost=sum(S.fuelLog.filter(ms))+sum(S.service.filter(ms)),pr=inc-cost;
+  const w0=wk(today()),wt=S.tripLog.filter(t=>String(t.date||'')>=w0);
+  const keys=new Set();S.companies.forEach(c=>keys.add(c.id));S.tripLog.forEach(t=>{const k=pkey(t);if(k)keys.add(k)});
+  const nm=k=>k.startsWith('o:')?otherName(k.slice(2)):label('companies',k);
+  const ow=[...keys].filter(k=>k.startsWith('o:')||byId('companies',k)).map(k=>({k,v:owed(k)})).filter(o=>o.v>0.5).sort((u,w)=>w.v-u.v);
+  const al=[];
+  S.vehicles.forEach(v=>{
+    DOCS.forEach(([k,t])=>{const l=v[k+'Till'];if(l){const d=days(l);if(d<=30)al.push(`${esc(v.no)}: ${t} ${d<0?'expired':'expires in '+d+' days'}`)}});
+    const r=S.service.filter(s=>s.vehicle===v.id&&(s.nextTill||+s.nextKm>0)).sort((u,w)=>String(w.date).localeCompare(u.date))[0];
+    if(r){
+      if(r.nextTill){const d=days(r.nextTill);if(d<=30)al.push(`${esc(v.no)}: ${esc(r.type||'Service')} ${d<0?'overdue':'due in '+d+' days'}`)}
+      if(+r.nextKm>0){const lk=Math.max(0,...S.fuelLog.filter(f=>f.vehicle===v.id).map(f=>+f.cur||0)),left=r.nextKm-lk;if(lk&&left<=500)al.push(`${esc(v.no)}: ${esc(r.type||'Service')} ${left<0?'overdue by '+(-left)+' km':'due in '+left+' km'}`)}
+    }
+  });
+  let lb=null;try{lb=localStorage.getItem('tmlast')}catch(e){}
+  const bd=lb?Math.floor((Date.now()-new Date(lb).getTime())/864e5):null;
+  const bk=(bd===null||bd>=7)?`<div class='card n'><div class='warn'><b>${bd===null?'No backup yet':'Last backup was '+bd+' days ago'}</b></div><div class='mut'>Save a copy of your data on your phone.</div><button class='btn s' id='bkn'>Backup now</button></div>`:'';
+  return `<div class='top'><h1>Home</h1></div>${bk}
+  <div class='grid'><div class='stat'><span class='mut'>Income this month</span><b>${rs(inc)}</b></div><div class='stat'><span class='mut'>Costs this month</span><b>${rs(cost)}</b></div><div class='stat'><span class='mut'>Profit this month</span><b class='${pr<0?'neg':'pos'}'>${rs(pr)}</b></div><div class='stat'><span class='mut'>Money to receive</span><b class='${ow.length?'warn':''}'>${rs(ow.reduce((s,o)=>s+o.v,0))}</b></div></div>
+  <div class='mut'>This week: ${wt.length} trips · ${rs(sum(wt))}</div>
+  <h3>Who owes you</h3>${ow.length?ow.slice(0,5).map(o=>`<div class='card n'><div class='l'><b>${esc(nm(o.k))}</b><b class='warn'>${rs(o.v)}</b></div></div>`).join(''):`<div class='card n mut'>Nobody owes you anything right now.</div>`}
+  <h3>Needs attention</h3>${al.length?al.map(a=>`<div class='card n warn'>${a}</div>`).join(''):`<div class='card n mut'>Nothing urgent. Documents and services look fine.</div>`}`;
+}
+function pgMore(){
+  return `<div class='top'><h1>More</h1></div>
+  <div class='card' data-go='fare'><b>🧮 Fare calculator</b><div class='mut'>Work out a trip fare from two locations.</div></div>
+  <div class='card' data-go='report'><b>📊 Monthly report</b><div class='mut'>Income, costs and profit. Share as a PDF.</div></div>
+  <div class='card' data-go='service'><b>🔧 Service &amp; tyres</b><div class='mut'>Repairs, tyre changes and service reminders.</div></div>`;
+}
+function pgSvc(){
+  const m=S.service.filter(inM).sort((u,w)=>String(w.date).localeCompare(u.date));
+  return `<div class='top'><h1>Service &amp; tyres</h1><button class='btn' id='add'>+ Add</button></div>${monBar()}
+  <div class='grid'><div class='stat'><span class='mut'>Spent in ${mlabel(mon)}</span><b>${rs(sum(m))}</b></div><div class='stat'><span class='mut'>Entries</span><b>${m.length}</b></div></div>
+  ${m.length?m.map(x=>`<div class='card' data-e='service|${esc(x.id)}'><div class='l'><b>${esc(x.type)} · ${esc(label('vehicles',x.vehicle))}</b><span class='amt'>${rs(x.amount)}</span></div><div class='mut'>${fd(x.date)}${+x.km>0?' · '+x.km+' km':''}${x.nextTill?' · next '+fd(x.nextTill):''}${+x.nextKm>0?' · next at '+x.nextKm+' km':''}${x.note?' · '+esc(x.note):''}</div></div>`).join(''):`<div class='empty'>No service entries in this month.</div>`}
+  <div class='note'>Add a service or tyre change with its next due date or km. A reminder shows on Home 30 days (or 500 km) before it is due.</div>`;
+}
+function repData(){
+  const inc=S.tripLog.filter(inM),fu=S.fuelLog.filter(inM),sv=S.service.filter(inM),py=S.payments.filter(inM);
+  const vs=S.vehicles.map(v=>{const i=sum(inc.filter(t=>t.vehicle===v.id)),f=sum(fu.filter(t=>t.vehicle===v.id)),s=sum(sv.filter(t=>t.vehicle===v.id));return{n:v.no,i,f,s,p:i-f-s}}).sort((u,w)=>String(u.n).localeCompare(String(w.n)));
+  const rest={n:'Not assigned',i:sum(inc)-sum(vs,'i'),f:sum(fu)-sum(vs,'f'),s:sum(sv)-sum(vs,'s')};rest.p=rest.i-rest.f-rest.s;
+  if(Math.abs(rest.i)+Math.abs(rest.f)+Math.abs(rest.s)>0.5)vs.push(rest);
+  const pt=Object.create(null),pr=Object.create(null);
+  inc.forEach(t=>{const k=pkey(t);if(k)pt[k]=(pt[k]||0)+lt(t)});
+  py.forEach(p=>{const k=pkey(p);if(k)pr[k]=(pr[k]||0)+(+p.amount||0)});
+  const okk=k=>k.startsWith('o:')||byId('companies',k);
+  const cu=[...new Set([...Object.keys(pt),...Object.keys(pr)])].filter(okk).map(k=>({n:k.startsWith('o:')?otherName(k.slice(2)):label('companies',k),i:pt[k]||0,r:pr[k]||0,o:owed(k)})).sort((u,w)=>w.i-u.i);
+  const keys=new Set();S.companies.forEach(c=>keys.add(c.id));S.tripLog.forEach(t=>{const k=pkey(t);if(k)keys.add(k)});
+  const ow=[...keys].filter(okk).reduce((s,k)=>s+Math.max(0,owed(k)),0);
+  return{inc:sum(inc),fu:sum(fu),sv:sum(sv),py:sum(py),vs,cu,ow};
+}
+function pgRep(){
+  const r=repData(),pf=r.inc-r.fu-r.sv;
+  return `<div class='top'><h1>Monthly report</h1></div>${monBar()}
+  <div class='grid'><div class='stat'><span class='mut'>Income</span><b>${rs(r.inc)}</b></div><div class='stat'><span class='mut'>Fuel + service</span><b>${rs(r.fu+r.sv)}</b></div><div class='stat'><span class='mut'>Profit</span><b class='${pf<0?'neg':'pos'}'>${rs(pf)}</b></div><div class='stat'><span class='mut'>Payments received</span><b>${rs(r.py)}</b></div></div>
+  <div class='row'><button class='btn' id='rep'>Share PDF</button><button class='btn g' id='reps'>Save PDF</button></div>
+  <h3>By vehicle</h3>${r.vs.length?r.vs.map(v=>`<div class='card n'><div class='l'><b>${esc(v.n)}</b><b class='${v.p<0?'neg':'pos'}'>${rs(v.p)}</b></div><div class='mut'>Income ${rs(v.i)} · fuel ${rs(v.f)} · service ${rs(v.s)}</div></div>`).join(''):`<div class='empty'>No data yet.</div>`}
+  <h3>By customer</h3>${r.cu.length?r.cu.map(c=>`<div class='card n'><div class='l'><b>${esc(c.n)}</b><span class='amt'>${rs(c.i)}</span></div><div class='mut'>Received ${rs(c.r)} · outstanding now ${rs(Math.max(0,c.o))}</div></div>`).join(''):`<div class='empty'>No trips in this month.</div>`}`;
+}
+function rup(d,x,yb,h){
+  const w=h*0.62,t=yb-h,cx=x+w*0.5,cy=t+h*0.3,rx=w*0.46,ry=h*0.3;
+  d.setDrawColor(0,0,0);d.setLineWidth(Math.max(0.18,h*0.085));
+  d.line(x,t,x+w,t);d.line(x,t+h*0.22,x+w,t+h*0.22);
+  let pp=[cx,t];
+  for(let a=-60;a<=90;a+=30){const r=a*Math.PI/180,q=[cx+rx*Math.cos(r),cy+ry*Math.sin(r)];d.line(pp[0],pp[1],q[0],q[1]);pp=q}
+  d.line(pp[0],pp[1],x+w*0.06,t+h*0.6);
+  d.line(x+w*0.14,t+h*0.6,x+w*0.96,yb);
+  d.setLineWidth(0.25);
+}
+function rm(d,s,xr,yb,sz){const w=d.getTextWidth(s),h=sz*0.3528*0.72;d.text(s,xr,yb,{align:'right'});rup(d,xr-w-h*0.62-1.6,yb,h)}
+function makeRep(){
+  const d=new window.jspdf.jsPDF({unit:'mm',format:'a4'}),r=repData(),W=210,M=15;
+  const N=n=>(+n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fs=(sz,st)=>{d.setFont('helvetica',st||'normal');d.setFontSize(sz)};
+  d.setFillColor(22,50,92);d.rect(0,0,W,30,'F');
+  d.setTextColor(255,255,255);fs(20,'bold');d.text(biz(),M,14);fs(11);d.text('Monthly report - '+mlabel(mon),M,23);
+  d.setTextColor(0,0,0);d.setLineWidth(0.25);
+  let y=42;
+  const chk=h=>{if(y+h>280){d.addPage();y=20}};
+  const sec=t=>{chk(16);fs(12,'bold');d.setTextColor(0,0,0);d.text(t,M,y);y+=3;d.setDrawColor(150,158,170);d.line(M,y,W-M,y);y+=7};
+  sec('Summary');
+  [['Income from trips',r.inc,0],['Fuel',r.fu,0],['Service and repairs',r.sv,0],['Profit',r.inc-r.fu-r.sv,1],['Payments received this month',r.py,0],['Total outstanding today',r.ow,0]].forEach(([k,v,b])=>{chk(8);fs(10.5,b?'bold':'normal');d.text(k,M,y);rm(d,N(v),W-M,y,10.5);y+=7});
+  const X=[0,100,130,160,W-M];
+  const row=(c,b)=>{chk(7);fs(9.5,b?'bold':'normal');d.text(String(c[0]).slice(0,26),M,y);[1,2,3,4].forEach(i=>{if(c[i]!==undefined)d.text(typeof c[i]==='number'?N(c[i]):String(c[i]),X[i],y,{align:'right'})});d.setDrawColor(227,230,236);d.line(M,y+2,W-M,y+2);y+=6.5};
+  y+=4;sec('By vehicle');
+  row(['Vehicle','Income','Fuel','Service','Profit'],1);r.vs.forEach(v=>row([v.n,v.i,v.f,v.s,v.p]));
+  y+=4;sec('By customer');
+  row(['Customer','Income','Received','Outstanding'],1);r.cu.forEach(c=>row([c.n,c.i,c.r,Math.max(0,c.o)]));
+  chk(10);fs(8.5);d.setTextColor(110,120,135);d.text('Generated '+fd(today())+' by '+biz(),M,Math.min(y+6,290));
+  d.setTextColor(0,0,0);
+  return d;
+}
+async function shareBlob(blob,fn,share){
+  if(share&&navigator.canShare){try{const f=new File([blob],fn,{type:'application/pdf'});if(navigator.canShare({files:[f]})){await navigator.share({files:[f],title:fn});return}}catch(e){if(e&&e.name==='AbortError')return}}
+  try{const dl=await claude.use('downloads');if(!dl)return note('Saving isn’t available here');await dl.save({filename:fn,data:blob});note('PDF saved. Open it from your files to share.')}
+  catch(e){if(!e||e.code!=='declined')note('Couldn’t save the PDF: '+((e&&(e.code||e.message))||'not available'))}
+}
+async function repOut(share){
+  if(!window.jspdf)return note('PDF tool couldn’t load. Check your internet and reload the page.');
+  let blob;try{blob=makeRep().output('blob')}catch(e){return note('Couldn’t create the PDF')}
+  await shareBlob(blob,biz().replace(/[^A-Za-z0-9]+/g,'_')+'-report-'+mon+'.pdf',share);
+}
+/* ---------- Render ---------- */
+function render(){
+  ALLOC=calcAlloc();
+  $('#nav').innerHTML=TABS.map(([k,l,i])=>`<button data-t="${k}" class="${(k===tab||(k==='more'&&['fare','report','service'].includes(tab)))?'on':''}"><span>${i}</span>${l}</button>`).join('');
+  $('#nav').querySelectorAll('button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;co=null;$('#v').dataset.p='';render();scrollTo(0,0)});
+  const v=$('#v');
+  if(tab==='fare'){if(v.dataset.p==='fare')return;v.innerHTML=pgFare();v.dataset.p='fare';wireFare();return}
+  v.dataset.p=tab;
+  const bn='';
+  v.innerHTML=bn+{home:pgHome,more:pgMore,report:pgRep,service:pgSvc,trips:pgTrips,companies:pgCo,fuel:pgFuel,vehicles:pgVeh}[tab]();
+  const on=(id,fn)=>{const e=$('#'+id);if(e)e.onclick=fn};
+  v.querySelectorAll('[data-e]').forEach(e=>e.onclick=()=>{const [c,i]=e.dataset.e.split('|');openM(c,i)});
+  v.querySelectorAll('[data-c]').forEach(e=>e.onclick=()=>{co=e.dataset.c;render()});
+  v.querySelectorAll('[data-go]').forEach(e=>e.onclick=()=>{tab=e.dataset.go;v.dataset.p='';render();scrollTo(0,0)});
+  v.querySelectorAll('[data-rp]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();const k=b.dataset.rp;openM('payments',null,k.startsWith('o:')?{other:otherName(k.slice(2))}:{company:k})});
+  v.querySelectorAll('[data-pay]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();save('tripLog',{...byId('tripLog',b.dataset.pay),paid:'Paid'})});
+  const mo=$('#mon');if(mo)mo.onchange=()=>{if(mo.value){mon=mo.value;render()}};
+  on('add',()=>openM(T[tab],null,tab==='trips'&&tview==='day'?{date:tday}:undefined));on('cfg',()=>openM('settings','invoice'));
+  on('bk',()=>{co=null;render()});on('ad',()=>openM('tripLog',null,{company:co}));
+  on('ec',()=>openM('companies',co));on('iv',()=>openInv(co));on('mp',markPaid);on('ia',openAll);on('bk1',doBackup);on('hist',openHist);on('rp',()=>openM('payments',null,{company:co}));on('bkn',doBackup);
+  const td=$('#tday');if(td)td.onchange=()=>{if(td.value){tday=td.value;render()}};
+  on('dprev',()=>{tday=addD(tday,-1);render()});on('dnext',()=>{tday=addD(tday,1);render()});
+  on('vday',()=>{tview='day';render()});on('vmon',()=>{tview='month';render()});on('vtd',()=>{tday=today();render()});on('rep',()=>repOut(true));on('reps',()=>repOut(false));
+  on('dc',()=>{const b=$('#dc');if(b.dataset.s){const id=co;co=null;del('companies',id);render()}else{b.dataset.s=1;const n=S.tripLog.filter(t=>t.company===co).length;b.textContent='Tap again to delete'+(n?' ('+n+' trips stay in Trips)':'')}});on('rs1',()=>$('#rsf').click());
+  const rf=$('#rsf');if(rf)rf.onchange=()=>{if(rf.files[0])doRestore(rf.files[0])};
+  
+  v.querySelectorAll('[data-inv]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();openInv(b.dataset.inv)});
+}
+
+render();
+(async()=>{
+  try{db=window.claude?await claude.use('db'):null}catch(e){db=null}
+  if(db){
+    setTimeout(()=>{if(!got)note('Shared data is taking a while to load…')},10000);
+    COLL.forEach(c=>db.collection(c).onSnapshot(s=>{got=true;S[c]=s.docs.map(d=>({id:d.id,...d.data()}));render()},e=>note('Couldn’t load '+c+': '+(e.code||e.message))));
+    db.doc('settings/invoice').onSnapshot(s=>{S.cfg=s.exists?s.data():{};render()},()=>{});
+  }else LS.load();
+  ready=true;render();
+})();
+
+try{if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+</script>
+</body>
+</html>
