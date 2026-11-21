@@ -30,6 +30,20 @@ jobs:
         shell: bash
         run: |
           mkdir -p app/src/main/java/com/kstransport/ks
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+
+          mkdir -p app/src/main/res/mipmap-mdpi
+          mkdir -p app/src/main/res/mipmap-hdpi
+          mkdir -p app/src/main/res/mipmap-xhdpi
+          mkdir -p app/src/main/res/mipmap-xxhdpi
+          mkdir -p app/src/main/res/mipmap-xxxhdpi
+
+          convert icon-maskable-512.png -resize 48x48 app/src/main/res/mipmap-mdpi/ic_launcher.png
+          convert icon-maskable-512.png -resize 72x72 app/src/main/res/mipmap-hdpi/ic_launcher.png
+          convert icon-maskable-512.png -resize 96x96 app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          convert icon-maskable-512.png -resize 144x144 app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          convert icon-maskable-512.png -resize 192x192 app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
 
           cat > settings.gradle <<'EOF'
           pluginManagement {
@@ -81,6 +95,7 @@ jobs:
               <application
                   android:theme="@android:style/Theme.Material.Light.NoActionBar"
                   android:label="KS"
+                  android:icon="@mipmap/ic_launcher"
                   android:usesCleartextTraffic="false">
                   <activity
                       android:name=".MainActivity"
