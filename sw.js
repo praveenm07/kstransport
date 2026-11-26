@@ -4,7 +4,7 @@
    Icons, manifest and the PDF library: saved copy first, refreshed quietly in the background.
    Only caches whose name starts with "kst-" are ever deleted. Your trips, fuel and other records
    are NOT stored in these caches, so updating never touches them. */
-const VERSION='2026-11-23-a';
+const VERSION='2026-11-25-a';
 const CACHE='kst-'+VERSION;
 const LIB='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
 const CORE=['./','index.html','manifest.json','icon-192.png','icon-512.png','icon-maskable-512.png'];
